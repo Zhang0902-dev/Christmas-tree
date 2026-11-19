@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Merry Christmas</title>
+<style>
+  :root {
+    --gold: #ffd77a;
+    --gold-soft: rgba(255, 205, 110, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #01030a;
+    font-family: "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background:
+      radial-gradient(1200px 820px at 50% 8%, rgba(32, 62, 150, 0.5), transparent 70%),
+      radial-gradient(900px 700px at 15% 95%, rgba(96, 26, 110, 0.22), transparent 72%),
+      linear-gradient(#040817 0%, #02050f 55%, #010208 100%);
+  }
+
+  #scene {
+    position: fixed;
+    inset: 0;
+    display: block;
+    cursor: grab;
+    touch-action: none;
+  }
+  #scene:active { cursor: grabbing; }
+
+  .vignette {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 50% 45%, transparent 42%, rgba(0, 0, 0, 0.55) 100%);
+  }
+
+  .title {
+    position: fixed;
+    top: 4vh;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    text-align: center;
+    font-family: Georgia, "Times New Roman", "Songti SC", serif;
+    font-weight: 400;
+    font-size: clamp(1.9rem, 5.6vw, 4.1rem);
+    letter-spacing: 0.1em;
+    line-height: 1.1;
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .title span {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(-20px) scale(0.92);
+    background: linear-gradient(180deg, #fffbe8 0%, #ffe28f 42%, #ffb347 78%, #ff8f3a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 16px rgba(255, 190, 80, 0.45));
+  }
+
+  body.intro-done .title span {
+    animation: letterIn 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation-delay: calc(var(--i) * 0.06s + 0.1s);
+  }
+
+  .title span.space { width: 0.42em; }
+
+  @keyframes letterIn {
+    0%   { opacity: 0; transform: translateY(-22px) scale(0.9); }
+    60%  { opacity: 1; transform: translateY(3px) scale(1.02); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .hint {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    color: rgba(215, 228, 255, 0.42);
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0;
+  }
+
+  body.intro-done .hint {
+    animation: hintIn 1.4s ease forwards;
+    animation-delay: 0.8s;
+  }
+
+  @keyframes hintIn {
+    from { opacity: 0; transform: translate(-50%, 8px); }
+    to   { opacity: 1; transform: translate(-50%, 0); }
+  }
+
+  .music-btn {
+    position: fixed;
+    right: 22px;
+    bottom: 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px 9px 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 208, 120, 0.28);
+    background: rgba(255, 255, 255, 0.05);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: #ffe6b0;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    cursor: pointer;
+    transition: background 0.25s ease, border-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .music-btn:hover {
+    background: rgba(255, 214, 128, 0.12);
+    border-color: rgba(255, 214, 128, 0.5);
+    transform: translateY(-1px);
+  }
+
+  .music-btn:focus-visible {
+    outline: 2px solid rgba(255, 214, 128, 0.7);
+    outline-offset: 3px;
+  }
+
+  .music-btn .note {
+    font-size: 16px;
+    line-height: 1;
+    display: inline-block;
+  }
+
+  .music-btn.playing {
+    border-color: rgba(255, 214, 128, 0.65);
+    box-shadow: 0 0 22px rgba(255, 190, 90, 0.22), 0 6px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .music-btn.playing .note {
+    animation: noteBounce 0.75s ease-in-out infinite;
+  }
+
+  @keyframes noteBounce {
+    0%, 100% { transform: translateY(0) rotate(-6deg); }
+    50%      { transform: translateY(-3px) rotate(8deg); }
+  }
+
+  .camera-btn {
+    bottom: 72px;
+  }
+
+  .camera-btn .note {
+    font-size: 14px;
+  }
+
+  .camera-btn.active {
+    border-color: rgba(140, 220, 255, 0.6);
+    color: #d6f2ff;
+    box-shadow: 0 0 22px rgba(90, 180, 255, 0.25), 0 6px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .cam-preview {
+    position: fixed;
+    left: 22px;
+    bottom: 24px;
+    width: 172px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 214, 128, 0.22);
+    background: rgba(4, 8, 20, 0.6);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+    z-index: 15;
+  }
+
+  .cam-preview.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .cam-preview video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: #000;
+    transform: scaleX(-1);
+  }
+
+  .gesture-status {
+    padding: 6px 8px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-align: center;
+    color: #ffe6b0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .gesture-status.open { color: #bfe6ff; }
+  .gesture-status.fist { color: #ffd07a; }
+
+  .loader {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    background: #01030a;
+    transition: opacity 0.9s ease;
+  }
+
+  .loader.hide {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .loader-ring {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 214, 128, 0.16);
+    border-top-color: rgba(255, 214, 128, 0.85);
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loader-text {
+    color: rgba(220, 232, 255, 0.45);
+    font-size: 12px;
+    letter-spacing: 0.3em;
+  }
+
+  @media (max-width: 640px) {
+    .title {
+      top: 4vh;
+      letter-spacing: 0.06em;
+    }
+    .hint {
+      bottom: 82px;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+    }
+    .music-btn {
+      right: 14px;
+      bottom: 18px;
+    }
+    .camera-btn {
+      bottom: 64px;
+    }
+    .cam-preview {
+      left: 14px;
+      bottom: 76px;
+      width: 128px;
+    }
+  }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div class="vignette"></div>
+  <h1 class="title" id="title" data-text="Merry Christmas"></h1>
+  <div class="hint">拖动旋转 · 滚轮缩放 · 点击摄像头：张手繁星 / 握拳圣诞树</div>
+
+  <button class="music-btn" id="musicBtn" type="button" aria-pressed="false" title="播放 / 暂停背景音乐">
+    <span class="note">&#9834;</span>
+    <span class="label">音乐</span>
+  </button>
+
+  <button class="music-btn camera-btn" id="cameraBtn" type="button" aria-pressed="false" title="开启 / 关闭摄像头手势识别">
+    <span class="note">&#9678;</span>
+    <span class="label">摄像头</span>
+  </button>
+
+  <div class="cam-preview" id="camPreview">
+    <video id="camVideo" autoplay playsinline muted></video>
+    <div class="gesture-status" id="gestureStatus">未检测到手</div>
+  </div>
+
+  <div class="loader" id="loader">
+    <div class="loader-ring"></div>
+    <div class="loader-text">LOADING</div>
+  </div>
+
+  <script>
+    (function buildTitle() {
+      const el = document.getElementById('title');
+      const text = el.dataset.text || 'Merry Christmas';
+      const frag = document.createDocumentFragment();
+      [...text].forEach((ch, i) => {
+        const span = document.createElement('span');
+        span.style.setProperty('--i', i);
+        if (ch === ' ') {
+          span.className = 'space';
+          span.textContent = '\u00A0';
+        } else {
+          span.textContent = ch;
+        }
+        frag.appendChild(span);
+      });
+      el.appendChild(frag);
+    })();
+
+    window.addEventListener('error', () => {
+      const t = document.querySelector('.loader-text');
+      if (t) t.textContent = '加载失败，请检查网络后刷新';
+    });
+    window.addEventListener('unhandledrejection', () => {
+      const t = document.querySelector('.loader-text');
+      if (t) t.textContent = '加载失败，请检查网络后刷新';
+    });
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const canvas = document.getElementById('scene');
+    const loader = document.getElementById('loader');
+    const isMobile = window.matchMedia('(max-width: 640px)').matches
+      || (navigator.maxTouchPoints > 1 && window.innerWidth < 900);
+
+    const TREE_HEIGHT = 7.0;
+    const TREE_BASE_Y = -2.6;
+    const TREE_TOP_Y = TREE_BASE_Y + TREE_HEIGHT;
+    const TREE_RADIUS = 2.7;
+
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 220);
+    const wideEnough = window.innerWidth / window.innerHeight >= 0.8;
+    if (wideEnough) {
+      camera.position.set(2.4, 2.2, 11.6);
+    } else {
+      camera.position.set(1.6, 2.5, 14.6);
+    }
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, wideEnough ? 0.95 : 1.0, 0);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.055;
+    controls.enablePan = false;
+    controls.rotateSpeed = 0.55;
+    controls.zoomSpeed = 0.8;
+    controls.minDistance = 6.5;
+    controls.maxDistance = 17;
+    controls.minPolarAngle = 0.55;
+    controls.maxPolarAngle = 1.78;
+    controls.autoRotate = false;
+    controls.update();
+
+    function makeCircleTexture(size = 64) {
+      const c = document.createElement('canvas');
+      c.width = size;
+      c.height = size;
+      const ctx = c.getContext('2d');
+      const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+      g.addColorStop(0, 'rgba(255,255,255,1)');
+      g.addColorStop(0.35, 'rgba(255,255,255,0.85)');
+      g.addColorStop(0.7, 'rgba(255,255,255,0.22)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, size, size);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    function makeStarTexture(size = 256) {
+      const c = document.createElement('canvas');
+      c.width = size;
+      c.height = size;
+      const ctx = c.getContext('2d');
+      const cx = size / 2;
+      const cy = size / 2;
+
+      const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, size / 2);
+      halo.addColorStop(0, 'rgba(255,225,150,0.55)');
+      halo.addColorStop(0.25, 'rgba(255,190,90,0.22)');
+      halo.addColorStop(0.6, 'rgba(255,150,50,0.05)');
+      halo.addColorStop(1, 'rgba(255,120,30,0)');
+      ctx.fillStyle = halo;
+      ctx.fillRect(0, 0, size, size);
+
+      const outer = size * 0.33;
+      const inner = size * 0.135;
+      const spikes = 5;
+      ctx.beginPath();
+      for (let i = 0; i < spikes * 2; i++) {
+        const r = i % 2 === 0 ? outer : inner;
+        const a = -Math.PI / 2 + (i * Math.PI) / spikes;
+        const x = cx + Math.cos(a) * r;
+        const y = cy + Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+
+      const starGrad = ctx.createLinearGradient(cx, cy - outer, cx, cy + outer);
+      starGrad.addColorStop(0, '#fffdf2');
+      starGrad.addColorStop(0.55, '#ffe08a');
+      starGrad.addColorStop(1, '#ffb03a');
+      ctx.fillStyle = starGrad;
+      ctx.shadowColor = 'rgba(255,205,110,0.95)';
+      ctx.shadowBlur = size * 0.16;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    /* ---------------- Christmas tree particles ---------------- */
+
+    const treeGroup = new THREE.Group();
+    scene.add(treeGroup);
+
+    const treeCount = isMobile ? 6000 : 12000;
+    const positions = new Float32Array(treeCount * 3);
+    const heights = new Float32Array(treeCount);
+    const randoms = new Float32Array(treeCount);
+    const sizes = new Float32Array(treeCount);
+    const TREE_TURNS = Math.PI * 2 * 40;
+
+    for (let i = 0; i < treeCount; i++) {
+      const t = Math.pow(i / treeCount, 1.06);
+      const inner = Math.random() < 0.12;
+      const taper = 0.04 + 0.96 * Math.pow(1 - t, 1.03);
+      let radius = TREE_RADIUS * taper;
+      const onSpiral = Math.random() < 0.58;
+      radius *= onSpiral ? 0.94 + Math.random() * 0.1 : 0.8 + Math.random() * 0.26;
+      if (inner) radius *= Math.sqrt(Math.random()) * 0.8;
+
+      const angle = onSpiral
+        ? t * TREE_TURNS + (Math.random() - 0.5) * 0.14
+        : Math.random() * Math.PI * 2;
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius;
+      const y = TREE_BASE_Y + t * TREE_HEIGHT + (Math.random() - 0.5) * 0.06;
+
+      positions[i * 3] = x;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = z;
+      heights[i] = t;
+      randoms[i] = Math.random();
+      sizes[i] = 1.35 + Math.random() * 1.9 + (1 - t) * 0.5;
+    }
+
+    const treeGeometry = new THREE.BufferGeometry();
+    treeGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    treeGeometry.setAttribute('aT', new THREE.BufferAttribute(heights, 1));
+    treeGeometry.setAttribute('aRand', new THREE.BufferAttribute(randoms, 1));
+    treeGeometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+
+    const treeUniforms = {
+      uTime: { value: 0 },
+      uPixelRatio: { value: renderer.getPixelRatio() },
+      uReveal: { value: 1.05 },
+      uFade: { value: 1 }
+    };
+
+    const treeMaterial = new THREE.ShaderMaterial({
+      uniforms: treeUniforms,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexShader: /* glsl */`
+        uniform float uTime;
+        uniform float uPixelRatio;
+        attribute float aT;
+        attribute float aRand;
+        attribute float aSize;
+        varying float vT;
+        varying float vRand;
+
+        void main() {
+          vec3 pos = position;
+          pos.x += sin(uTime * 0.6 + pos.y * 1.2 + aRand * 6.2831) * 0.016;
+          pos.z += cos(uTime * 0.5 + pos.y * 1.1 + aRand * 6.2831) * 0.016;
+
+          vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+          gl_Position = projectionMatrix * mvPosition;
+          gl_PointSize = clamp(aSize * uPixelRatio * (14.0 / -mvPosition.z), 1.0, 30.0);
+
+          vT = aT;
+          vRand = aRand;
+        }
+      `,
+      fragmentShader: /* glsl */`
+        uniform float uTime;
+        uniform float uReveal;
+        uniform float uFade;
+        varying float vT;
+        varying float vRand;
+
+        vec3 hsl2rgb(vec3 c) {
+          vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+          return c.z + c.y * (rgb - 0.5) * (1.0 - abs(2.0 * c.z - 1.0));
+        }
+
+        void main() {
+          if (vT < uReveal) discard;
+
+          vec2 uv = gl_PointCoord - 0.5;
+          float d = length(uv);
+          if (d > 0.5) discard;
+
+          float hue = fract(vT * 0.85 + uTime * 0.024 + vRand * 0.06);
+          float light = 0.54 + 0.14 * sin(vRand * 43.0 + uTime * 0.8);
+          vec3 color = hsl2rgb(vec3(hue, 0.9, light));
+
+          float band = 1.0 - smoothstep(0.0, 0.09, vT - uReveal);
+          color *= 1.0 + band * 2.0;
+
+          float twinkle = 0.58 + 0.42 * sin(uTime * 2.1 + vRand * 50.0);
+          float alpha = pow(smoothstep(0.5, 0.04, d), 2.0) * twinkle;
+          alpha = min(alpha * (1.0 + band * 1.2), 1.0) * uFade;
+
+          gl_FragColor = vec4(color * 1.35, alpha);
+        }
+      `
+    });
+
+    const tree = new THREE.Points(treeGeometry, treeMaterial);
+    treeGroup.add(tree);
+
+    /* ---------------- Star topper ---------------- */
+
+    const starTexture = makeStarTexture();
+    const starMaterial = new THREE.SpriteMaterial({
+      map: starTexture,
+      color: 0xffffff,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      opacity: 0.95
+    });
+    const starSprite = new THREE.Sprite(starMaterial);
+    starSprite.position.set(0, TREE_TOP_Y + 0.5, 0);
+    starSprite.scale.set(1.7, 1.7, 1);
+    treeGroup.add(starSprite);
+
+    /* ---------------- Ground glow ---------------- */
+
+    const glowTexture = makeCircleTexture(128);
+    const groundGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glowTexture,
+      color: 0x2f63d8,
+      transparent: true,
+      opacity: 0.32,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    }));
+    groundGlow.position.set(0, TREE_BASE_Y - 0.18, 0);
+    groundGlow.scale.set(9.5, 3.4, 1);
+    scene.add(groundGlow);
+
+    /* ---------------- Snow ---------------- */
+
+    const snowCount = isMobile ? 480 : 1000;
+    const snowPositions = new Float32Array(snowCount * 3);
+    const snowSpeeds = new Float32Array(snowCount);
+    const snowPhases = new Float32Array(snowCount);
+
+    for (let i = 0; i < snowCount; i++) {
+      snowPositions[i * 3] = Math.random() * 26 - 13;
+      snowPositions[i * 3 + 1] = Math.random() * 15 - 7;
+      snowPositions[i * 3 + 2] = Math.random() * 11 - 9;
+      snowSpeeds[i] = 0.35 + Math.random() * 0.85;
+      snowPhases[i] = Math.random() * Math.PI * 2;
+    }
+
+    const snowGeometry = new THREE.BufferGeometry();
+    snowGeometry.setAttribute('position', new THREE.BufferAttribute(snowPositions, 3));
+
+    const snowTexture = makeCircleTexture(64);
+    const snowMaterial = new THREE.PointsMaterial({
+      map: snowTexture,
+      color: 0xf2f7ff,
+      size: 0.14,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+
+    const snow = new THREE.Points(snowGeometry, snowMaterial);
+    scene.add(snow);
+
+    /* ---------------- Star field ---------------- */
+
+    const starCount = isMobile ? 700 : 1300;
+    const starPositions = new Float32Array(starCount * 3);
+    const starSizes = new Float32Array(starCount);
+    const starRandoms = new Float32Array(starCount);
+
+    for (let i = 0; i < starCount; i++) {
+      const r = 34 + Math.random() * 32;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      starPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      starPositions[i * 3 + 1] = r * Math.cos(phi);
+      starPositions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+      starSizes[i] = 1.0 + Math.random() * 1.9;
+      starRandoms[i] = Math.random();
+    }
+
+    const starFieldGeometry = new THREE.BufferGeometry();
+    starFieldGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    starFieldGeometry.setAttribute('aSize', new THREE.BufferAttribute(starSizes, 1));
+    starFieldGeometry.setAttribute('aRand', new THREE.BufferAttribute(starRandoms, 1));
+
+    const starFieldUniforms = {
+      uTime: { value: 0 },
+      uPixelRatio: { value: renderer.getPixelRatio() },
+      uStarMode: { value: 0 }
+    };
+
+    const starFieldMaterial = new THREE.ShaderMaterial({
+      uniforms: starFieldUniforms,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexShader: /* glsl */`
+        uniform float uPixelRatio;
+        uniform float uStarMode;
+        attribute float aSize;
+        attribute float aRand;
+        varying float vRand;
+
+        void main() {
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          gl_Position = projectionMatrix * mvPosition;
+          gl_PointSize = aSize * uPixelRatio * (1.0 + uStarMode * 1.7);
+          vRand = aRand;
+        }
+      `,
+      fragmentShader: /* glsl */`
+        uniform float uTime;
+        uniform float uStarMode;
+        varying float vRand;
+
+        void main() {
+          vec2 uv = gl_PointCoord - 0.5;
+          float d = length(uv);
+          if (d > 0.5) discard;
+
+          float twinkle = 0.3 + 0.7 * pow(0.5 + 0.5 * sin(uTime * 1.6 + vRand * 80.0), 2.0);
+          vec3 color = mix(vec3(0.62, 0.76, 1.0), vec3(1.0, 0.94, 0.8), vRand);
+          float alpha = smoothstep(0.5, 0.08, d) * twinkle * (1.0 + uStarMode * 2.2);
+
+          gl_FragColor = vec4(color * alpha, alpha);
+        }
+      `
+    });
+
+    const starField = new THREE.Points(starFieldGeometry, starFieldMaterial);
+    scene.add(starField);
+
+    /* ---------------- Full-sky star burst (hand gesture) ---------------- */
+
+    const skyStarCount = isMobile ? 1600 : 3200;
+    const skyPositions = new Float32Array(skyStarCount * 3);
+    const skySizes = new Float32Array(skyStarCount);
+    const skyRandoms = new Float32Array(skyStarCount);
+    const skyHues = new Float32Array(skyStarCount);
+
+    for (let i = 0; i < skyStarCount; i++) {
+      const r = 16 + Math.pow(Math.random(), 0.7) * 78;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      skyPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      skyPositions[i * 3 + 1] = r * Math.cos(phi);
+      skyPositions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+      skySizes[i] = 1.2 + Math.random() * 3.0;
+      skyRandoms[i] = Math.random();
+      skyHues[i] = Math.random();
+    }
+
+    const skyGeometry = new THREE.BufferGeometry();
+    skyGeometry.setAttribute('position', new THREE.BufferAttribute(skyPositions, 3));
+    skyGeometry.setAttribute('aSize', new THREE.BufferAttribute(skySizes, 1));
+    skyGeometry.setAttribute('aRand', new THREE.BufferAttribute(skyRandoms, 1));
+    skyGeometry.setAttribute('aHue', new THREE.BufferAttribute(skyHues, 1));
+
+    const skyUniforms = {
+      uTime: { value: 0 },
+      uPixelRatio: { value: renderer.getPixelRatio() },
+      uStarMode: { value: 0 }
+    };
+
+    const skyMaterial = new THREE.ShaderMaterial({
+      uniforms: skyUniforms,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexShader: /* glsl */`
+        uniform float uPixelRatio;
+        uniform float uStarMode;
+        attribute float aSize;
+        attribute float aRand;
+        attribute float aHue;
+        varying float vRand;
+        varying float vHue;
+
+        void main() {
+          vec3 p = position * mix(0.32, 1.0, uStarMode);
+          vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);
+          gl_Position = projectionMatrix * mvPosition;
+          gl_PointSize = aSize * uPixelRatio * (0.5 + uStarMode * 1.9);
+          vRand = aRand;
+          vHue = aHue;
+        }
+      `,
+      fragmentShader: /* glsl */`
+        uniform float uTime;
+        uniform float uStarMode;
+        varying float vRand;
+        varying float vHue;
+
+        void main() {
+          vec2 uv = gl_PointCoord - 0.5;
+          float d = length(uv);
+          if (d > 0.5) discard;
+
+          float twinkle = 0.35 + 0.65 * pow(0.5 + 0.5 * sin(uTime * 2.2 + vRand * 90.0), 2.0);
+          vec3 cool = vec3(0.68, 0.82, 1.0);
+          vec3 warm = vec3(1.0, 0.93, 0.78);
+          vec3 color = mix(cool, warm, vHue);
+          float alpha = smoothstep(0.5, 0.05, d) * twinkle * clamp(uStarMode, 0.0, 1.0);
+
+          gl_FragColor = vec4(color * alpha * 1.3, alpha);
+        }
+      `
+    });
+
+    const skyStars = new THREE.Points(skyGeometry, skyMaterial);
+    skyStars.visible = false;
+    scene.add(skyStars);
+
+    /* ---------------- Music: synthesized Jingle Bells ---------------- */
+
+    const NOTE = {
+      C4: 261.63,
+      D4: 293.66,
+      E4: 329.63,
+      F4: 349.23,
+      G4: 392.0,
+      A4: 440.0,
+      B4: 493.88,
+      C5: 523.25
+    };
+
+    const MELODY = [
+      ['E4', 1], ['E4', 1], ['E4', 2],
+      ['E4', 1], ['E4', 1], ['E4', 2],
+      ['E4', 1], ['G4', 1], ['C4', 1], ['D4', 1], ['E4', 4],
+      ['F4', 1], ['F4', 1], ['F4', 1], ['F4', 1],
+      ['F4', 1], ['E4', 1], ['E4', 1], ['E4', 1],
+      ['E4', 1], ['D4', 1], ['D4', 1], ['E4', 1], ['D4', 2], ['G4', 2],
+      ['E4', 1], ['E4', 1], ['E4', 2],
+      ['E4', 1], ['E4', 1], ['E4', 2],
+      ['E4', 1], ['G4', 1], ['C4', 1], ['D4', 1], ['E4', 4],
+      ['F4', 1], ['F4', 1], ['F4', 1], ['F4', 1],
+      ['F4', 1], ['E4', 1], ['E4', 1], ['E4', 1],
+      ['G4', 1], ['G4', 1], ['F4', 1], ['D4', 1], ['C4', 4],
+      ['R', 2]
+    ];
+
+    const BEAT_SECONDS = 0.3;
+
+    let audioCtx = null;
+    let masterGain = null;
+    let musicPlaying = false;
+    let schedulerTimer = null;
+    let nextNoteTime = 0;
+    let noteIndex = 0;
+
+    function initAudio() {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return false;
+      audioCtx = new Ctx();
+
+      const softener = audioCtx.createBiquadFilter();
+      softener.type = 'lowpass';
+      softener.frequency.value = 3400;
+      softener.Q.value = 0.6;
+
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0;
+      masterGain.connect(softener);
+      softener.connect(audioCtx.destination);
+      return true;
+    }
+
+    function playTone(freq, startTime, duration) {
+      const main = audioCtx.createOscillator();
+      main.type = 'triangle';
+      main.frequency.value = freq;
+
+      const mainGain = audioCtx.createGain();
+      mainGain.gain.setValueAtTime(0.0001, startTime);
+      mainGain.gain.exponentialRampToValueAtTime(0.34, startTime + 0.02);
+      mainGain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration * 0.95);
+
+      main.connect(mainGain);
+      mainGain.connect(masterGain);
+      main.start(startTime);
+      main.stop(startTime + duration * 1.2);
+
+      const bell = audioCtx.createOscillator();
+      bell.type = 'sine';
+      bell.frequency.value = freq * 2;
+
+      const bellGain = audioCtx.createGain();
+      bellGain.gain.setValueAtTime(0.0001, startTime);
+      bellGain.gain.exponentialRampToValueAtTime(0.1, startTime + 0.012);
+      bellGain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration * 0.7);
+
+      bell.connect(bellGain);
+      bellGain.connect(masterGain);
+      bell.start(startTime);
+      bell.stop(startTime + duration);
+    }
+
+    function runScheduler() {
+      while (nextNoteTime < audioCtx.currentTime + 0.25) {
+        const [name, beats] = MELODY[noteIndex];
+        const duration = beats * BEAT_SECONDS;
+
+        if (name !== 'R') playTone(NOTE[name], nextNoteTime, duration);
+
+        nextNoteTime += duration;
+        noteIndex = (noteIndex + 1) % MELODY.length;
+      }
+    }
+
+    const musicBtn = document.getElementById('musicBtn');
+
+    async function toggleMusic() {
+      if (!audioCtx && !initAudio()) return;
+
+      if (audioCtx.state === 'suspended') {
+        try { await audioCtx.resume(); } catch (e) { return; }
+      }
+
+      const now = audioCtx.currentTime;
+
+      if (!musicPlaying) {
+        musicPlaying = true;
+        if (nextNoteTime < now + 0.05) nextNoteTime = now + 0.08;
+        masterGain.gain.cancelScheduledValues(now);
+        masterGain.gain.setValueAtTime(Math.max(masterGain.gain.value, 0.0001), now);
+        masterGain.gain.linearRampToValueAtTime(0.22, now + 0.25);
+
+        runScheduler();
+        schedulerTimer = setInterval(runScheduler, 60);
+        musicBtn.classList.add('playing');
+        musicBtn.setAttribute('aria-pressed', 'true');
+      } else {
+        musicPlaying = false;
+        clearInterval(schedulerTimer);
+        schedulerTimer = null;
+        masterGain.gain.cancelScheduledValues(now);
+        masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+        masterGain.gain.linearRampToValueAtTime(0.0001, now + 0.2);
+        musicBtn.classList.remove('playing');
+        musicBtn.setAttribute('aria-pressed', 'false');
+      }
+    }
+
+    musicBtn.addEventListener('click', toggleMusic);
+
+    /* ---------------- Camera + hand gesture ---------------- */
+
+    const camVideo = document.getElementById('camVideo');
+    const camPreview = document.getElementById('camPreview');
+    const gestureStatus = document.getElementById('gestureStatus');
+    const cameraBtn = document.getElementById('cameraBtn');
+
+    let handLandmarker = null;
+    let handModelPromise = null;
+    let mediaStream = null;
+    let cameraActive = false;
+    let detectRafId = 0;
+    let lastVideoTime = -1;
+
+    let currentGesture = 'none';
+    let candidateGesture = 'none';
+    let candidateSince = 0;
+
+    let starTarget = 0;
+    let starMode = 0;
+    let baseDistance = camera.position.distanceTo(controls.target);
+
+    function setGestureLabel(text, cls) {
+      gestureStatus.textContent = text;
+      gestureStatus.className = 'gesture-status' + (cls ? ' ' + cls : '');
+    }
+
+    function ensureHandModel() {
+      if (handModelPromise) return handModelPromise;
+      handModelPromise = (async () => {
+        const vision = await import('https://unpkg.com/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+        const fileset = await vision.FilesetResolver.forVisionTasks(
+          'https://unpkg.com/@mediapipe/tasks-vision@0.10.14/wasm'
+        );
+        handLandmarker = await vision.HandLandmarker.createFromOptions(fileset, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+            delegate: 'GPU'
+          },
+          runningMode: 'VIDEO',
+          numHands: 1,
+          minHandDetectionConfidence: 0.5,
+          minHandPresenceConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
+        return handLandmarker;
+      })().catch((err) => {
+        handModelPromise = null;
+        throw err;
+      });
+      return handModelPromise;
+    }
+
+    function dist2d(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function isPalmOpen(lm) {
+      const wrist = lm[0];
+      const fingers = [[8, 6], [12, 10], [16, 14], [20, 18]];
+      let extended = 0;
+      for (const [tip, pip] of fingers) {
+        if (dist2d(lm[tip], wrist) > dist2d(lm[pip], wrist) * 1.12) extended++;
+      }
+      if (dist2d(lm[4], wrist) > dist2d(lm[2], wrist) * 1.08) extended++;
+      return extended >= 4;
+    }
+
+    function applyGesture(gesture) {
+      if (gesture === 'open' && starTarget !== 1) {
+        baseDistance = camera.position.distanceTo(controls.target);
+        starTarget = 1;
+        setGestureLabel('张开手掌 · 满天繁星', 'open');
+      } else if (gesture === 'fist' && starTarget !== 0) {
+        starTarget = 0;
+        setGestureLabel('握拳 · 圣诞树', 'fist');
+      } else if (gesture === 'none') {
+        setGestureLabel('未检测到手', '');
+      }
+    }
+
+    function updateGesture(gesture, now) {
+      if (gesture === currentGesture) {
+        candidateGesture = gesture;
+        return;
+      }
+      if (gesture !== candidateGesture) {
+        candidateGesture = gesture;
+        candidateSince = now;
+        return;
+      }
+      if (now - candidateSince < 350) return;
+      currentGesture = gesture;
+      applyGesture(gesture);
+    }
+
+    function detectLoop(now) {
+      if (!cameraActive) return;
+      detectRafId = requestAnimationFrame(detectLoop);
+      if (!handLandmarker || camVideo.readyState < 2) return;
+      if (camVideo.currentTime === lastVideoTime) return;
+      lastVideoTime = camVideo.currentTime;
+
+      let result;
+      try {
+        result = handLandmarker.detectForVideo(camVideo, now);
+      } catch (err) {
+        return;
+      }
+
+      const landmarks = result && result.landmarks && result.landmarks[0];
+      const gesture = landmarks ? (isPalmOpen(landmarks) ? 'open' : 'fist') : 'none';
+      updateGesture(gesture, now);
+    }
+
+    async function enableCamera() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        camPreview.classList.add('show');
+        setGestureLabel('当前浏览器不支持摄像头', '');
+        return;
+      }
+
+      cameraBtn.disabled = true;
+      camPreview.classList.add('show');
+      setGestureLabel('正在请求摄像头权限…', '');
+
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+          audio: false
+        });
+        camVideo.srcObject = mediaStream;
+        await camVideo.play();
+
+        cameraActive = true;
+        lastVideoTime = -1;
+        cameraBtn.classList.add('active');
+        cameraBtn.setAttribute('aria-pressed', 'true');
+        setGestureLabel('正在加载手势模型…', '');
+
+        ensureHandModel()
+          .then(() => {
+            if (!cameraActive) return;
+            setGestureLabel('未检测到手', '');
+            if (!detectRafId) detectRafId = requestAnimationFrame(detectLoop);
+          })
+          .catch(() => {
+            if (!cameraActive) return;
+            setGestureLabel('手势模型加载失败（需联网）', '');
+          });
+      } catch (err) {
+        setGestureLabel('无法访问摄像头，请检查权限', '');
+        camPreview.classList.remove('show');
+        if (mediaStream) {
+          mediaStream.getTracks().forEach((t) => t.stop());
+          mediaStream = null;
+        }
+      } finally {
+        cameraBtn.disabled = false;
+      }
+    }
+
+    function disableCamera() {
+      cameraActive = false;
+      if (detectRafId) {
+        cancelAnimationFrame(detectRafId);
+        detectRafId = 0;
+      }
+      if (mediaStream) {
+        mediaStream.getTracks().forEach((t) => t.stop());
+        mediaStream = null;
+      }
+      camVideo.srcObject = null;
+      camPreview.classList.remove('show');
+      cameraBtn.classList.remove('active');
+      cameraBtn.setAttribute('aria-pressed', 'false');
+
+      currentGesture = 'none';
+      candidateGesture = 'none';
+      starTarget = 0;
+      setGestureLabel('未检测到手', '');
+    }
+
+    cameraBtn.addEventListener('click', () => {
+      if (cameraActive || mediaStream) disableCamera();
+      else enableCamera();
+    });
+
+    /* ---------------- Animation ---------------- */
+
+    const clock = new THREE.Clock();
+    let elapsed = 0;
+    const baseStarScale = 1.7;
+
+    const INTRO_DELAY = 0.4;
+    const INTRO_DURATION = 3.2;
+    let introDone = false;
+
+    function easeInOutCubic(x) {
+      return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const dt = Math.min(clock.getDelta(), 0.05);
+      elapsed += dt;
+
+      const revealProgress = THREE.MathUtils.clamp((elapsed - INTRO_DELAY) / INTRO_DURATION, 0, 1);
+      const easedReveal = easeInOutCubic(revealProgress);
+      treeUniforms.uReveal.value = 1.05 - 1.2 * easedReveal;
+
+      starMode = THREE.MathUtils.damp(starMode, starTarget, 3.2, dt);
+
+      treeUniforms.uTime.value = elapsed;
+      treeUniforms.uFade.value = 1 - starMode;
+      starFieldUniforms.uTime.value = elapsed;
+      starFieldUniforms.uStarMode.value = starMode;
+      skyUniforms.uTime.value = elapsed;
+      skyUniforms.uStarMode.value = starMode;
+
+      skyStars.visible = starMode > 0.002;
+      skyStars.rotation.y += dt * (0.02 + starMode * 0.08);
+      skyStars.rotation.x += dt * 0.004;
+
+      starField.rotation.y += dt * (0.004 + starMode * 0.02);
+
+      const topperAppear = THREE.MathUtils.smoothstep(easedReveal, 0.7, 1.0);
+      const pulse = 1 + Math.sin(elapsed * 1.8) * 0.06;
+      const topperScale = baseStarScale * pulse * (1 + starMode * 0.35);
+      starSprite.scale.set(topperScale, topperScale, 1);
+      starSprite.material.opacity = (0.85 + Math.sin(elapsed * 2.3) * 0.1) * topperAppear * (1 - starMode);
+      starSprite.visible = topperAppear > 0.001 && starMode < 0.995;
+
+      groundGlow.material.opacity = 0.32 * topperAppear * (1 - starMode);
+
+      snowMaterial.opacity = 0.85 * (1 - 0.7 * starMode);
+
+      if (starMode > 0.0005 || starTarget > 0) {
+        const offset = camera.position.clone().sub(controls.target);
+        const curDist = offset.length();
+        if (curDist > 1e-4) {
+          const desired = baseDistance * (1 - 0.42 * starMode);
+          const nextDist = THREE.MathUtils.damp(curDist, desired, 4.5, dt);
+          offset.multiplyScalar(nextDist / curDist);
+          camera.position.copy(controls.target).add(offset);
+        }
+      }
+
+      if (!introDone && easedReveal >= 0.999) {
+        introDone = true;
+        document.body.classList.add('intro-done');
+      }
+
+      const snowPos = snowGeometry.attributes.position.array;
+      for (let i = 0; i < snowCount; i++) {
+        const i3 = i * 3;
+        snowPos[i3 + 1] -= snowSpeeds[i] * dt;
+        snowPos[i3] += Math.sin(elapsed * 0.55 + snowPhases[i]) * 0.1 * dt;
+
+        if (snowPos[i3 + 1] < -6.6) {
+          snowPos[i3 + 1] = 8.4;
+          snowPos[i3] = Math.random() * 26 - 13;
+        }
+      }
+      snowGeometry.attributes.position.needsUpdate = true;
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(w, h);
+      treeUniforms.uPixelRatio.value = renderer.getPixelRatio();
+      starFieldUniforms.uPixelRatio.value = renderer.getPixelRatio();
+      skyUniforms.uPixelRatio.value = renderer.getPixelRatio();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (musicPlaying) audioCtx.suspend();
+        if (cameraActive && detectRafId) {
+          cancelAnimationFrame(detectRafId);
+          detectRafId = 0;
+        }
+      } else {
+        if (musicPlaying) audioCtx.resume();
+        if (cameraActive && handLandmarker && !detectRafId) {
+          lastVideoTime = -1;
+          detectRafId = requestAnimationFrame(detectLoop);
+        }
+      }
+    });
+
+    animate();
+
+    requestAnimationFrame(() => {
+      loader.classList.add('hide');
+      setTimeout(() => { loader.style.display = 'none'; }, 1000);
+    });
+  </script>
+</body>
+</html>
